@@ -126,4 +126,60 @@ users.get = (id, callback) => {
   });
 };
 
+
+/* changes password */
+users.Editing_password = (pass_info,user, callback) =>
+{
+db.get("SELECT * FROM Users WHERE id = ?", [user.id], (err, user_row) => {
+    if (err) {
+      var result = {
+        success: false,
+        error_message: err
+      };
+      callback(result);
+    }
+    bcrypt.compare(pass_info.oldPassword, user_row.passwordHash, (err, passwords_match) => {
+      if (!passwords_match) {
+        var result = {
+          success: false,
+          error_message: "the password not match"          
+        };
+        callback(result);
+        return;
+      }
+      if (pass_info.newPassword.length < 3) {
+        var result = {
+          success: false,
+          error_message: "Your password is not long enough (3 character minimum)!"
+        };
+        callback(result);
+        return;
+      }
+      bcrypt.hash(pass_info.newPassword, saltRounds, (err, passwordHash) => {    
+        var sql =
+        `
+        UPDATE Users
+        SET passwordHash = ?
+        WHERE id = ?
+        `;
+        var params =[passwordHash, user.id];
+        db.run(sql, params, function (err, rows){
+          if (err){
+            callback({ success: false });
+          }
+              var result = {
+                success: true,
+                redirect_uri: "/",
+              }
+              callback(result);
+        });
+      });
+    })
+  });
+};
+
+
+
+
+
 module.exports = users;

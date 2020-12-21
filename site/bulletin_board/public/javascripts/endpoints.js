@@ -146,3 +146,37 @@ function login(username, password, callback) {
       }
   });
 }
+
+
+/* changing password */
+
+function edit_password(new_password, old_password,confirm_password, callback) {
+  var user_password = {
+    oldPassword: old_password,
+    newPassword: new_password,
+    confirmPassword : confirm_password
+  };
+  $.ajax({
+      type: "POST",
+      url: "/users/edit_password/",
+      data: JSON.stringify(user_password),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(result){
+        console.log(result)
+
+        callback({
+          success: true,
+          redirect_uri: result.redirect_uri
+        });
+      },
+      error: function(error) {
+        callback({
+          success: false,
+          redirect_uri: null,
+          error_message: error.responseJSON.error_message
+        });
+      }
+  });
+}
+
